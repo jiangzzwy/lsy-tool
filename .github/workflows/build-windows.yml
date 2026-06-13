@@ -1,0 +1,33 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Build with PyInstaller
+        run: |
+          python build.py --win
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 移送函批量生成工具-Windows
+          path: dist/移送函批量生成工具.exe
+          retention-days: 30

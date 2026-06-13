@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案件线索移送函批量生成</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#1a1b23;color:#e0e2ea;display:flex;justify-content:center;padding:24px;min-height:100vh}
+.app{width:100%;max-width:800px}
+.header{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #2e3040}
+.header h1{font-size:20px;font-weight:600;color:#e0e2ea}
+.header h1 span{color:#4a8af5}
+.header .status{margin-left:auto;font-size:14px;font-weight:500}
+.status-green{color:#4bc67e}.status-yellow{color:#ffc845}.status-red{color:#e85555}
+.steps{display:flex;align-items:center;gap:0;padding:20px 0 12px;justify-content:center}
+.step{display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:6px;
+      font-size:14px;font-weight:500;cursor:default;transition:all .2s}
+.step .num{display:inline-flex;width:24px;height:24px;border-radius:12px;
+           align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.step-on{color:#4a8af5}.step-on .num{background:#4a8af5}
+.step-done{color:#3daa6a}.step-done .num{background:#3daa6a}
+.step-off{color:#5a5e72}.step-off .num{background:#5a5e72}
+.step-arrow{color:#3a3d4c;font-size:20px;padding:0 4px}
+.panel{background:#22242e;border:1px solid #2e3040;border-radius:10px;padding:20px 24px;margin-bottom:12px}
+.panel h2{font-size:16px;font-weight:600;margin-bottom:16px}
+.panel h2.warn{color:#ffc845}.panel h2.ok{color:#4bc67e}
+.form-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.form-row label{font-size:14px;color:#9a9eb8;min-width:70px}
+.form-row input[type=text]{flex:1;background:#2a2d38;border:1px solid #3a3f52;border-radius:6px;
+    padding:8px 12px;color:#e0e2ea;font-size:13px;outline:none}
+.form-row input[type=text]:focus{border-color:#4a8af5}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;
+     border-radius:6px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-primary{background:#4a8af5;color:#fff}.btn-primary:hover{background:#5a9cf8}
+.btn-primary:disabled{background:#3a4a62;color:#7a8a9e;cursor:not-allowed}
+.btn-secondary{background:#2e3040;color:#9a9eb8;border:1px solid #3a3f52}
+.btn-secondary:hover{background:#363848;color:#b0b4cc}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:4px}
+.progress-bar{width:100%;height:8px;background:#2a2d38;border-radius:4px;margin:12px 0}
+.progress-fill{height:100%;background:#4a8af5;border-radius:4px;transition:width .3s}
+.progress-label{font-size:12px;color:#7a7e92;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:12px}
+.stat-card{background:#2a2d38;border-radius:8px;padding:10px 12px;text-align:center}
+.stat-card .label{font-size:11px;color:#7a7e92;margin-bottom:4px}
+.stat-card .value{font-size:16px;font-weight:700}
+.stat-card .value.green{color:#4bc67e}.stat-card .value.blue{color:#4a8af5}
+.stat-card .value.yellow{color:#ffc845}.stat-card .value.red{color:#e85555}
+.stat-card .value.dim{color:#7a7e92}
+.log-header{display:flex;align-items:center;gap:8px;padding:8px 0}
+.log-header span{font-size:14px;color:#9a9eb8;font-weight:500}
+.log-box{background:#1e2028;border:1px solid #2e3040;border-radius:8px;padding:12px 16px;
+         font-family:"SF Mono","Menlo",monospace;font-size:12px;line-height:1.6;
+         color:#b0b4cc;overflow-y:auto;max-height:220px;white-space:pre-wrap}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);
+               display:none;justify-content:center;align-items:center;z-index:1000;
+               backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+               animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal{background:#262838;border:1px solid #3a3f55;border-radius:16px;padding:0;
+       max-width:440px;width:92%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.5);
+       animation:slideUp .25s ease;overflow:hidden}
+.modal-icon{width:48px;height:48px;border-radius:50%;background:rgba(255,200,70,0.12);
+            display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.modal-icon svg{width:24px;height:24px}
+.modal-body{padding:32px 32px 24px}
+.modal h3{font-size:17px;color:#e8eaf0;font-weight:600;margin-bottom:8px}
+.modal .modal-desc{font-size:14px;color:#8b90a8;margin-bottom:24px;line-height:1.6}
+.modal-detail{background:#1e2030;border-radius:8px;padding:12px 16px;margin-bottom:24px;text-align:left}
+.modal-detail .detail-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px}
+.modal-detail .detail-row+.detail-row{border-top:1px solid #2a2d40}
+.modal-detail .detail-label{color:#7a7e96}
+.modal-detail .detail-value{color:#e0e2ea;font-weight:600}
+.modal-detail .detail-value.warn{color:#ffc845}
+.modal-footer{display:flex;border-top:1px solid #2a2d40}
+.modal-footer .modal-btn{flex:1;padding:14px 0;font-size:14px;font-weight:500;cursor:pointer;
+          border:none;background:transparent;transition:all .15s}
+.modal-footer .modal-btn-cancel{color:#8b90a8}
+.modal-footer .modal-btn-cancel:hover{background:#2a2d40;color:#c0c4d8}
+.modal-footer .modal-btn-confirm{color:#4a8af5;border-left:1px solid #2a2d40}
+.modal-footer .modal-btn-confirm:hover{background:rgba(74,138,245,0.1)}
+.modal-icon.icon-info{background:rgba(74,138,245,0.12)}
+.modal-icon.icon-warn{background:rgba(255,200,70,0.12)}
+.modal-icon.icon-error{background:rgba(232,85,85,0.12)}
+.modal-icon.icon-success{background:rgba(75,198,126,0.12)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>案件线索移送函<span>批量生成</span></h1>
+    <div class="status" id="status">就绪</div>
+  </div>
+  <div class="steps">
+    <div class="step step-on" id="step1"><span class="num">1</span>预检</div>
+    <div class="step-arrow">→</div>
+    <div class="step step-off" id="step2"><span class="num">2</span>补充数据</div>
+    <div class="step-arrow">→</div>
+    <div class="step step-off" id="step3"><span class="num">3</span>生成文件</div>
+  </div>
+  <div class="panel" id="panel1">
+    <h2>选择源文件并预检</h2>
+    <div class="form-row">
+      <label>源文件</label>
+      <input type="text" id="source_excel" placeholder="Excel工单文件路径...">
+      <button class="btn btn-secondary btn-sm" onclick="selectFile('source_excel')">浏览</button>
+    </div>
+    <div class="form-row">
+      <label>输出目录</label>
+      <input type="text" id="output_dir" placeholder="输出目录...">
+      <button class="btn btn-secondary btn-sm" onclick="selectDir('output_dir')">浏览</button>
+    </div>
+    <button class="btn btn-primary" id="btn_precheck" onclick="doPrecheck()">开始预检</button>
+  </div>
+  <div class="panel" id="panel2" style="display:none">
+    <h2 class="warn" id="step2_title">缺失登记机关数据，请补充</h2>
+    <div class="form-row">
+      <label>补充文件</label>
+      <input type="text" id="import_path" placeholder="选择已填写的补充模板...">
+      <button class="btn btn-secondary btn-sm" onclick="selectFile('import_path')">浏览</button>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:4px">
+      <button class="btn btn-primary" id="btn_import" onclick="doImport()">导入数据</button>
+      <button class="btn btn-secondary" onclick="openOutput()">打开输出目录</button>
+    </div>
+  </div>
+  <div class="panel" id="panel3" style="display:none">
+    <h2 class="ok">数据完整，可以生成文件</h2>
+    <button class="btn btn-primary" id="btn_gen" onclick="doGenerate()">开始生成</button>
+    <div class="progress-bar"><div class="progress-fill" id="progress_fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress_label"></div>
+  </div>
+  <div class="stats">
+    <div class="stat-card"><div class="label">数据库</div><div class="value blue" id="s_db">0</div></div>
+    <div class="stat-card"><div class="label">需要</div><div class="value dim" id="s_need">--</div></div>
+    <div class="stat-card"><div class="label">已覆盖</div><div class="value green" id="s_ok">--</div></div>
+    <div class="stat-card"><div class="label">缺失</div><div class="value yellow" id="s_missing">--</div></div>
+    <div class="stat-card"><div class="label">Word</div><div class="value green" id="s_word">--</div></div>
+    <div class="stat-card"><div class="label">台账</div><div class="value green" id="s_ledger">--</div></div>
+    <div class="stat-card"><div class="label">错误</div><div class="value green" id="s_err">--</div></div>
+  </div>
+  <div class="log-header">
+    <span>日志</span>
+    <div style="flex:1"></div>
+    <button class="btn btn-secondary btn-sm" onclick="exportDb()">导出数据</button>
+    <button class="btn btn-secondary btn-sm" onclick="doReset()">重置</button>
+    <button class="btn btn-secondary btn-sm" onclick="clearLog()">清空</button>
+  </div>
+  <div class="log-box" id="log_box"></div>
+
+  <div class="modal-overlay" id="modal_overlay">
+    <div class="modal">
+      <div class="modal-body">
+        <div class="modal-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffc845" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h3>缺失登记机关数据</h3>
+        <p class="modal-desc">部分企业未找到登记机关信息，需要补充后才能继续处理</p>
+        <div class="modal-detail">
+          <div class="detail-row"><span class="detail-label">需要登记机关</span><span class="detail-value" id="modal_total">--</span></div>
+          <div class="detail-row"><span class="detail-label">已覆盖</span><span class="detail-value" id="modal_covered" style="color:#4bc67e">--</span></div>
+          <div class="detail-row"><span class="detail-label">缺失</span><span class="detail-value warn" id="modal_missing">--</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" onclick="cancelSupplement()">暂不补充</button>
+        <button class="modal-btn modal-btn-confirm" onclick="confirmSupplement()">确认补充</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generic alert/confirm dialog -->
+  <div class="modal-overlay" id="alert_overlay">
+    <div class="modal">
+      <div class="modal-body">
+        <div class="modal-icon" id="alert_icon">
+          <svg id="alert_svg_info" viewBox="0 0 24 24" fill="none" stroke="#4a8af5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <svg id="alert_svg_warn" style="display:none" viewBox="0 0 24 24" fill="none" stroke="#ffc845" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <svg id="alert_svg_error" style="display:none" viewBox="0 0 24 24" fill="none" stroke="#e85555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          <svg id="alert_svg_success" style="display:none" viewBox="0 0 24 24" fill="none" stroke="#4bc67e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h3 id="alert_title">提示</h3>
+        <p class="modal-desc" id="alert_msg"></p>
+      </div>
+      <div class="modal-footer" id="alert_footer">
+        <button class="modal-btn modal-btn-confirm" id="alert_btn_ok" onclick="closeAlert()">知道了</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+var _pywebviewReady = false;
+window.addEventListener('pywebviewready', function(){
+  _pywebviewReady = true;
+  console.log('pywebview API ready');
+});
+const $ = id => document.getElementById(id);
+var _alertCallback = null;
+function showAlert(msg, type, title){
+  type = type || 'info';
+  title = title || '提示';
+  $('alert_title').textContent = title;
+  $('alert_msg').textContent = msg;
+  // Show correct icon
+  ['info','warn','error','success'].forEach(function(t){
+    var svg = $('alert_svg_'+t);
+    if(svg) svg.style.display = (t===type ? 'block' : 'none');
+  });
+  // Set icon bg class
+  var iconEl = $('alert_icon');
+  iconEl.className = 'modal-icon icon-' + type;
+  // Default: single OK button
+  $('alert_footer').innerHTML = '<button class="modal-btn modal-btn-confirm" style="border-left:none" onclick="closeAlert()">知道了</button>';
+  $('alert_overlay').style.display = 'flex';
+}
+function closeAlert(){
+  $('alert_overlay').style.display = 'none';
+  if(_alertCallback){ var cb=_alertCallback; _alertCallback=null; cb(); }
+}
+function showConfirm(msg, type, title, onConfirm, onCancel){
+  type = type || 'warn';
+  title = title || '确认';
+  $('alert_title').textContent = title;
+  $('alert_msg').textContent = msg;
+  ['info','warn','error','success'].forEach(function(t){
+    var svg = $('alert_svg_'+t);
+    if(svg) svg.style.display = (t===type ? 'block' : 'none');
+  });
+  var iconEl = $('alert_icon');
+  iconEl.className = 'modal-icon icon-' + type;
+  $('alert_footer').innerHTML =
+    '<button class="modal-btn modal-btn-cancel" onclick="closeConfirm(false)">取消</button>' +
+    '<button class="modal-btn modal-btn-confirm" onclick="closeConfirm(true)">确认</button>';
+  _alertCallback = function(confirmed){
+    if(confirmed){ if(onConfirm) onConfirm(); }
+    else { if(onCancel) onCancel(); }
+  };
+  $('alert_overlay').style.display = 'flex';
+}
+function closeConfirm(confirmed){
+  $('alert_overlay').style.display = 'none';
+  if(_alertCallback){ var cb=_alertCallback; _alertCallback=null; cb(confirmed); }
+}
+fetch('/api/default_excel').then(r=>r.json()).then(d=>{
+  if(d.path) $('source_excel').value=d.path;
+  $('output_dir').value=d.path?d.path.replace(/demands\/.*$/,'output'):'';
+});
+let pollMs=3000;
+function pollState(){
+  fetch('/api/state').then(r=>r.json()).then(d=>{
+    updateUI(d);
+    pollMs=d.running?1000:3000;
+  }).catch(()=>{});
+  setTimeout(pollState,pollMs);
+}
+pollState();
+function updateUI(d){
+  for(let i=1;i<=3;i++){
+    let el=$('step'+i);
+    el.className='step '+(i<d.step?'step-done':(i===d.step?'step-on':'step-off'));
+  }
+  $('panel1').style.display=d.step===1?'block':'none';
+  $('panel2').style.display=d.step===2?'block':'none';
+  $('panel3').style.display=d.step===3?'block':'none';
+  $('btn_precheck').disabled=d.running;
+  $('btn_import').disabled=d.running;
+  $('btn_gen').disabled=d.running;
+  $('status').textContent=d.status==='needs_confirm'?'缺失数据请确认':d.status;
+  $('status').className='status status-'+d.status_color;
+  if(d.status==='needs_confirm'&&d.missing_count>0&&!window._confirmShown){
+    window._confirmShown=true;
+    $('modal_total').textContent=d.stats.need;
+    $('modal_covered').textContent=d.stats.ok;
+    $('modal_missing').textContent=d.stats.missing;
+    $('modal_overlay').style.display='flex';
+  }
+  $('progress_fill').style.width=(d.progress*100)+'%';
+  $('progress_label').textContent=d.progress_label;
+  $('s_db').textContent=d.stats.db;
+  $('s_need').textContent=d.stats.need;
+  $('s_ok').textContent=d.stats.ok;
+  $('s_missing').textContent=d.stats.missing;
+  $('s_word').textContent=d.stats.word;
+  $('s_ledger').textContent=d.stats.ledger;
+  $('s_err').textContent=d.stats.err;
+  $('s_missing').className='value '+(d.stats.missing==0||d.stats.missing==='0'?'green':(d.stats.missing==='--'?'dim':'red'));
+  $('s_err').className='value '+(d.stats.err==0||d.stats.err==='0'?'green':(d.stats.err==='--'?'dim':'red'));
+  $('log_box').textContent=d.logs.join('\n');
+  $('log_box').scrollTop=$('log_box').scrollHeight;
+}
+function selectFile(inputId){
+  if(window.pywebview && window.pywebview.api && _pywebviewReady){
+    pywebview.api.fileDialog().then(function(path){
+      if(path) $(inputId).value=path;
+    }).catch(function(err){
+      showAlert('文件选择失败: '+err, 'error', '选择失败');
+    });
+  }else{
+    showAlert('桌面环境未就绪，请稍后重试', 'warn', '环境未就绪');
+  }
+}
+function selectDir(inputId){
+  if(window.pywebview && window.pywebview.api && _pywebviewReady){
+    pywebview.api.dirDialog().then(function(path){
+      if(path) $(inputId).value=path;
+    }).catch(function(err){
+      showAlert('目录选择失败: '+err, 'error', '选择失败');
+    });
+  }else{
+    showAlert('桌面环境未就绪，请稍后重试', 'warn', '环境未就绪');
+  }
+}
+function doPrecheck(){
+  fetch('/api/precheck',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({source_excel:$('source_excel').value,output_dir:$('output_dir').value})
+  }).then(r=>r.json()).then(d=>{if(d.error)showAlert(d.error,'error','预检失败')});
+}
+function doImport(){
+  var path=$('import_path').value;
+  if(!path||path.trim()===''){
+    showAlert('请先选择补充模板文件','warn','请选择文件');
+    return;
+  }
+  $('btn_import').disabled=true;
+  $('btn_import').textContent='导入中...';
+  fetch('/api/import',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({import_path:path,output_dir:$('output_dir').value})
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){showAlert(d.error,'error','导入失败');}
+    $('btn_import').disabled=false;
+    $('btn_import').textContent='导入数据';
+  }).catch(()=>{
+    $('btn_import').disabled=false;
+    $('btn_import').textContent='导入数据';
+  });
+}
+function doGenerate(){
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({output_dir:$('output_dir').value})
+  }).then(r=>r.json()).then(d=>{if(d.error)showAlert(d.error,'error','生成失败')});
+}
+function doReset(){fetch('/api/reset',{method:'POST'}).then(()=>pollState())}
+function exportDb(){
+  fetch('/api/export_db',{method:'POST'}).then(r=>r.json()).then(d=>{
+    if(d.error){
+      showAlert(d.error,'error','导出失败');
+      return;
+    }
+    if(window.pywebview && window.pywebview.api && _pywebviewReady){
+      pywebview.api.downloadFile(d.download).then(function(ok){
+        if(!ok) showAlert('导出取消或失败','warn','导出失败');
+      }).catch(function(){
+        showAlert('导出失败','error','导出失败');
+      });
+    }else if(d.download){
+      window.open('http://127.0.0.1:5000'+d.download);
+    }
+  });
+}
+function openOutput(){
+  var path=$('output_dir').value;
+  if(!path){showAlert('请先设置输出目录','warn','请设置路径');return;}
+  if(window.pywebview && window.pywebview.api && _pywebviewReady){
+    pywebview.api.openDir(path);
+  }else{
+    showAlert(path,'info','输出目录');
+  }
+}
+function clearLog(){
+  fetch('/api/clear_log',{method:'POST'});
+  var box=$('log_box');
+  if(box) box.textContent='';
+}
+function confirmSupplement(){
+  $('modal_overlay').style.display='none';
+  var saveDir=$('output_dir').value||'';
+  fetch('/api/confirm_supplement',{method:'POST'}).then(function(r){
+    return r.json();
+  }).then(function(){
+    fetch('/api/export_template',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({save_dir:saveDir})
+    }).then(function(r2){return r2.json()}).then(function(data){
+      if(data.ok){
+        _confirmShown=false;
+        pollState();
+      }else if(data.error){
+        showAlert(data.error,'error','导出模板失败');
+      }
+    });
+  });
+}
+function cancelSupplement(){
+  $('modal_overlay').style.display='none';
+  fetch('/api/cancel_supplement',{method:'POST'}).then(function(r){
+    return r.json();
+  }).then(function(){
+    _confirmShown=false;
+    pollState();
+  });
+}
+</script>
+</body>
+</html>
