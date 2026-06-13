@@ -49,6 +49,7 @@ def _build_cmd():
         "--clean",
         "--noconfirm",
         "--windowed",
+        "--onefile",
         "--name", "移送函批量生成工具",
         "--hidden-import", "flask",
         "--hidden-import", "webview",
