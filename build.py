@@ -89,9 +89,7 @@ def build_win():
         return
     print("Building Windows application...")
     subprocess.run(_build_cmd(), check=True)
-    # Use repr() to avoid UnicodeEncodeError on Windows cp1252 console
-    exe_path = BASE_DIR / 'dist' / '移送函批量生成工具.exe'
-    print(f"\nWindows exe built: {repr(exe_path)}")
+    print(f"\nWindows exe built successfully in: {BASE_DIR / 'dist'}")
 
 
 def main():
