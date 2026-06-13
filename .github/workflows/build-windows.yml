@@ -28,3 +28,16 @@ jobs:
           name: 移送函批量生成工具-Windows
           path: dist/移送函批量生成工具.exe
           retention-days: 30
+
+      - name: Create Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/移送函批量生成工具.exe
+          tag_name: v${{ github.run_number }}
+          name: Release ${{ github.run_number }}
+          body: |
+            自动构建发布
+            - Windows 可执行文件
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
