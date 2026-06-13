@@ -27,18 +27,29 @@ def clean():
     print("Clean done.")
 
 
+def _add_data_dirs(cmd, sep):
+    """Add --add-data entries for directories that exist on disk."""
+    data_dirs = [
+        (BASE_DIR / "demands", "demands"),
+        (BASE_DIR / "web" / "templates", "web/templates"),
+        (BASE_DIR / "web" / "static", "web/static"),
+    ]
+    for src, dest in data_dirs:
+        if src.exists():
+            cmd.extend(["--add-data", f"{src}{sep}{dest}"])
+        else:
+            print(f"  WARNING: Skipping missing data dir: {src}")
+
+
 def _build_cmd():
     """Common PyInstaller args for the pywebview-based app."""
     sep = ";" if platform.system() == "Windows" else ":"
-    return [
+    cmd = [
         sys.executable, "-m", "PyInstaller",
         "--clean",
         "--noconfirm",
         "--windowed",
         "--name", "移送函批量生成工具",
-        "--add-data", f"{BASE_DIR / 'demands'}{sep}demands",
-        "--add-data", f"{BASE_DIR / 'web' / 'templates'}{sep}web/templates",
-        "--add-data", f"{BASE_DIR / 'web' / 'static'}{sep}web/static",
         "--hidden-import", "flask",
         "--hidden-import", "webview",
         "--hidden-import", "openpyxl",
@@ -56,6 +67,8 @@ def _build_cmd():
         "--exclude-module", "pandas",
         str(BASE_DIR / "web.py"),
     ]
+    _add_data_dirs(cmd, sep)
+    return cmd
 
 
 def build_mac():
@@ -76,7 +89,9 @@ def build_win():
         return
     print("Building Windows application...")
     subprocess.run(_build_cmd(), check=True)
-    print(f"\nWindows exe built: {BASE_DIR / 'dist' / '移送函批量生成工具.exe'}")
+    # Use repr() to avoid UnicodeEncodeError on Windows cp1252 console
+    exe_path = BASE_DIR / 'dist' / '移送函批量生成工具.exe'
+    print(f"\nWindows exe built: {repr(exe_path)}")
 
 
 def main():
