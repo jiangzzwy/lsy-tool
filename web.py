@@ -273,7 +273,7 @@ def run_generation(out):
 
         _set_progress(0.92, "Generating ledger...")
         _log("Generating ledger...")
-        lp = generate_ledger(items, out, db)
+        lp = generate_ledger(items, out, db, word_results=word_results)
         _log(f"  Ledger: {lp}")
         db.close()
 

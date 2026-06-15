@@ -6,6 +6,8 @@ from datetime import date
 from pathlib import Path
 
 from docx import Document
+from docx.shared import RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from api_client import BureauDB, MockApiClient
 from excel_parser import SplitItem
@@ -127,6 +129,22 @@ def _build_body_text(item: SplitItem) -> str:
     return ""
 
 
+def _clear_para_and_set(para, text, font_name=None):
+    """Clear all runs in a paragraph, set text on first run, and ensure black color."""
+    for run in para.runs[1:]:
+        run.text = ""
+    if para.runs:
+        para.runs[0].text = text
+    else:
+        para.add_run(text)
+    # Force all runs to black color
+    for run in para.runs:
+        if run.text:
+            run.font.color.rgb = RGBColor(0, 0, 0)
+            if font_name:
+                run.font.name = font_name
+
+
 def _fill_template(template_path: str, item: SplitItem, db: BureauDB) -> Document:
     doc = Document(template_path)
     row = item.row
@@ -148,42 +166,23 @@ def _fill_template(template_path: str, item: SplitItem, db: BureauDB) -> Documen
 
         # Para 2: subtitle
         if text.startswith("京技管商务消移送"):
-            for run in para.runs[1:]:
-                run.text = ""
-            if para.runs:
-                para.runs[0].text = f"{subtitle_with_idx}号"
-            else:
-                para.add_run(f"{subtitle_with_idx}号")
+            _clear_para_and_set(para, f"{subtitle_with_idx}号", "宋体")
             continue
 
         # Para 4: notification unit
         if "市场监督管理局" in text and text.endswith("："):
-            for run in para.runs[1:]:
-                run.text = ""
-            if para.runs:
-                para.runs[0].text = f"{bureau}：   "
-            else:
-                para.add_run(f"{bureau}：   ")
+            _clear_para_and_set(para, f"{bureau}：   ", "仿宋_GB2312")
             continue
 
         # Para 5: body text
         if text.startswith("我单位在举报调查中发现"):
-            for run in para.runs[1:]:
-                run.text = ""
-            if para.runs:
-                para.runs[0].text = body_text
-            else:
-                para.add_run(body_text)
+            _clear_para_and_set(para, body_text, "仿宋_GB2312")
             continue
 
-        # Para 12: date
+        # Para 12: date - right aligned
         if re.match(r"\s*\d{4}年\d+月\d+日", text):
-            for run in para.runs[1:]:
-                run.text = ""
-            if para.runs:
-                para.runs[0].text = f" {today}"
-            else:
-                para.add_run(f" {today}")
+            _clear_para_and_set(para, today, "仿宋_GB2312")
+            para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             continue
 
     return doc
@@ -220,6 +219,8 @@ def generate_word_docs(
                 "task_no": item.row.task_no_str,
                 "shop": item.shop_name,
                 "bureau": _get_bureau(item, db),
+                "error": None,
+                "item": item,
             })
             logger.info(f"Generated: {out_file}")
         except Exception as e:
@@ -228,7 +229,11 @@ def generate_word_docs(
                 "row": item.row.row_num,
                 "classification": cls,
                 "filename": "",
+                "task_no": item.row.task_no_str,
+                "shop": item.shop_name,
+                "bureau": "",
                 "error": str(e),
+                "item": item,
             })
 
     return results

@@ -60,6 +60,7 @@ def generate_ledger(
     items: list[SplitItem],
     output_dir: str | Path,
     db: BureauDB,
+    word_results: list[dict] | None = None,
 ) -> str:
     """Generate ledger Excel file. Returns output file path."""
     output_path = Path(output_dir)
@@ -160,6 +161,29 @@ def generate_ledger(
         ws.column_dimensions[openpyxl.utils.get_column_letter(col)].width = width
 
     out_file = output_path / "台账.xlsx"
+
+    # Add error tab if there are failed Word generations
+    if word_results:
+        error_items = [(r["item"], r) for r in word_results if r.get("error")]
+        if error_items:
+            ws_err = wb.create_sheet("错误记录")
+            err_headers = ["Excel行号", "任务单号", "分类", "企业名称", "店铺", "信用代码", "错误信息"]
+            for col, h in enumerate(err_headers, 1):
+                cell = ws_err.cell(1, col, h)
+                cell.font = Font(bold=True)
+            for row_idx, (item, r) in enumerate(error_items, 2):
+                ws_err.cell(row_idx, 1, item.row.row_num)
+                ws_err.cell(row_idx, 2, item.row.task_no_str)
+                ws_err.cell(row_idx, 3, item.row.classification)
+                ws_err.cell(row_idx, 4, item.row.company)
+                ws_err.cell(row_idx, 5, item.shop_name)
+                ws_err.cell(row_idx, 6, item.row.credit_code)
+                ws_err.cell(row_idx, 7, r["error"])
+            err_widths = {1: 10, 2: 18, 3: 12, 4: 30, 5: 25, 6: 22, 7: 50}
+            for col, w in err_widths.items():
+                ws_err.column_dimensions[openpyxl.utils.get_column_letter(col)].width = w
+            logger.info(f"Error tab: {len(error_items)} records")
+
     wb.save(str(out_file))
     wb.close()
     logger.info(f"Generated ledger: {out_file} ({row_idx - 2} rows)")
