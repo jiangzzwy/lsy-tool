@@ -15,8 +15,8 @@ Excel 解析 + Word 移送函批量生成 + 台账生成的桌面应用，支持
 需要 Python 3.10+，安装依赖后运行：
 
 ```bash
-pip install dearpygui openpyxl python-docx requests
-python app.py
+pip install flask pywebview openpyxl python-docx requests
+python web.py
 ```
 
 ## 打包为桌面应用
@@ -51,7 +51,7 @@ python build.py --clean
 
 ```
 lsy/
-├── app.py              # 桌面 GUI 入口 (DearPyGui)
+├── web.py              # 桌面 GUI 入口 (Flask + pywebview)
 ├── main.py             # CLI 入口 (保留)
 ├── config.py           # 配置（路径、模板、API）
 ├── excel_parser.py     # Excel 解析 + 分类

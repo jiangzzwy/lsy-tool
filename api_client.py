@@ -191,6 +191,80 @@ class BureauDB:
         return {"imported": imported, "skipped": skipped, "errors": errors}
 
 
+    # ── Full-replace import ────────────────────────────────────────────────
+
+    def import_full_replace(self, template_path: str) -> dict:
+        """Import Excel into the database with full replacement.
+
+        Clears all existing records, then inserts everything from the file.
+        Data in the import file becomes the entire database content.
+
+        Expected columns: A=credit_code, B=company, C=*, D=bureau
+        (same format as export_template / export_db output)
+
+        Returns dict with:
+            imported: number of entries inserted
+            skipped: number of entries with empty bureau
+            deleted: number of previous records removed
+            errors: list of error messages
+        """
+        # Count records that will be deleted
+        old_count = self._db.execute("SELECT COUNT(*) FROM bureau_cache").fetchone()[0]
+
+        wb = openpyxl.load_workbook(template_path, data_only=True)
+        ws = wb.active
+
+        imported = 0
+        skipped = 0
+        errors = []
+
+        # Collect all valid rows first
+        rows_to_insert = []
+        for row_num in range(2, ws.max_row + 1):
+            cc = str(ws.cell(row_num, 1).value or "").strip()
+            company = str(ws.cell(row_num, 2).value or "").strip()
+            bureau = str(ws.cell(row_num, 4).value or "").strip()
+
+            if not cc:
+                continue
+
+            if not bureau:
+                skipped += 1
+                continue
+
+            rows_to_insert.append((cc, bureau, company))
+
+        wb.close()
+
+        # Clear and replace
+        try:
+            self._db.execute("DELETE FROM bureau_cache")
+            for cc, bureau, company in rows_to_insert:
+                self._db.execute(
+                    """INSERT INTO bureau_cache (credit_code, bureau, company, source, updated_at)
+                       VALUES (?, ?, ?, 'import', datetime('now', 'localtime'))""",
+                    (cc, bureau, company),
+                )
+            self._db.commit()
+            imported = len(rows_to_insert)
+        except Exception as e:
+            self._db.rollback()
+            errors.append(str(e))
+
+        return {"imported": imported, "skipped": skipped, "deleted": old_count, "errors": errors}
+
+    # ── Get all records ────────────────────────────────────────────────────
+
+    def get_all_records(self) -> list[dict]:
+        """Return all records in the database as a list of dicts."""
+        rows = self._db.execute(
+            "SELECT credit_code, bureau, company, source, updated_at FROM bureau_cache ORDER BY credit_code"
+        ).fetchall()
+        return [
+            {"credit_code": r[0], "bureau": r[1], "company": r[2], "source": r[3], "updated_at": r[4]}
+            for r in rows
+        ]
+
 class MockApiClient:
     """Derive bureau from address using heuristic regex matching.
     Used as fallback for rows without credit codes (三方个人, or rows with 暂无)."""

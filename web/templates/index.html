@@ -14,18 +14,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .header h1 span{color:#4a8af5}
 .header .status{margin-left:auto;font-size:14px;font-weight:500}
 .status-green{color:#4bc67e}.status-yellow{color:#ffc845}.status-red{color:#e85555}
-.steps{display:flex;align-items:center;gap:0;padding:20px 0 12px;justify-content:center}
-.step{display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:6px;
-      font-size:14px;font-weight:500;cursor:default;transition:all .2s}
-.step .num{display:inline-flex;width:24px;height:24px;border-radius:12px;
-           align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
-.step-on{color:#4a8af5}.step-on .num{background:#4a8af5}
-.step-done{color:#3daa6a}.step-done .num{background:#3daa6a}
-.step-off{color:#5a5e72}.step-off .num{background:#5a5e72}
-.step-arrow{color:#3a3d4c;font-size:20px;padding:0 4px}
-.panel{background:#22242e;border:1px solid #2e3040;border-radius:10px;padding:20px 24px;margin-bottom:12px}
-.panel h2{font-size:16px;font-weight:600;margin-bottom:16px}
-.panel h2.warn{color:#ffc845}.panel h2.ok{color:#4bc67e}
 .form-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .form-row label{font-size:14px;color:#9a9eb8;min-width:70px}
 .form-row input[type=text]{flex:1;background:#2a2d38;border:1px solid #3a3f52;border-radius:6px;
@@ -35,13 +23,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
      border-radius:6px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
 .btn-primary{background:#4a8af5;color:#fff}.btn-primary:hover{background:#5a9cf8}
 .btn-primary:disabled{background:#3a4a62;color:#7a8a9e;cursor:not-allowed}
+.btn-success{background:#3daa6a;color:#fff}.btn-success:hover{background:#4bc67e}
+.btn-success:disabled{background:#2a4a3a;color:#5a8a6a;cursor:not-allowed}
+.gen-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(26,27,35,0.92);
+  z-index:300;justify-content:center;align-items:center;flex-direction:column;gap:24px;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .3s ease}
+.gen-overlay.show{display:flex}
+.gen-spinner{width:56px;height:56px;border:4px solid #2e3040;border-top-color:#4a8af5;border-radius:50%;
+  animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-text{font-size:18px;font-weight:600;color:#e0e2ea}
+.gen-progress{width:280px;height:6px;background:#2a2d38;border-radius:3px;overflow:hidden}
+.gen-progress-fill{height:100%;background:linear-gradient(90deg,#4a8af5,#3daa6a);border-radius:3px;
+  width:0%;transition:width .4s ease}
+.gen-detail{font-size:13px;color:#7a7e92}
+.gen-done-icon{width:64px;height:64px;border-radius:50%;background:rgba(75,198,126,0.15);
+  display:flex;align-items:center;justify-content:center;animation:popIn .4s ease}
+.gen-done-icon svg{width:32px;height:32px}
+@keyframes popIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 .btn-secondary{background:#2e3040;color:#9a9eb8;border:1px solid #3a3f52}
 .btn-secondary:hover{background:#363848;color:#b0b4cc}
 .btn-sm{padding:6px 12px;font-size:12px;border-radius:4px}
 .progress-bar{width:100%;height:8px;background:#2a2d38;border-radius:4px;margin:12px 0}
 .progress-fill{height:100%;background:#4a8af5;border-radius:4px;transition:width .3s}
 .progress-label{font-size:12px;color:#7a7e92;margin-top:4px}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px}
 .stat-card{background:#2a2d38;border-radius:8px;padding:10px 12px;text-align:center}
 .stat-card .label{font-size:11px;color:#7a7e92;margin-bottom:4px}
 .stat-card .value{font-size:16px;font-weight:700}
@@ -85,6 +91,92 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .modal-icon.icon-warn{background:rgba(255,200,70,0.12)}
 .modal-icon.icon-error{background:rgba(232,85,85,0.12)}
 .modal-icon.icon-success{background:rgba(75,198,126,0.12)}
+
+.mapping-header{display:flex;align-items:center;gap:8px;padding:6px 0 2px;margin-top:4px}
+.mapping-header span{font-size:14px;color:#9a9eb8;font-weight:500}
+.mapping-count{font-size:12px;color:#7a7e92}
+.mapping-toolbar{display:flex;gap:6px;align-items:center;padding:2px 0 6px}
+.mapping-toolbar input{background:#2a2d38;border:1px solid #3a3f52;border-radius:6px;
+    padding:6px 10px;color:#e0e2ea;font-size:12px;outline:none}
+.mapping-toolbar input:focus{border-color:#4a8af5}
+.mapping-toolbar input.search{flex:1;min-width:140px}
+.toolbar-btn{display:inline-flex;align-items:center;gap:4px;background:#2e3040;border:1px solid #3a3f52;
+    color:#9a9eb8;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;
+    transition:all .15s;white-space:nowrap}
+.toolbar-btn:hover{border-color:#4a8af5;color:#4a8af5;background:#262838}
+.toolbar-btn .icon{font-size:14px;line-height:1}
+.toolbar-btn.primary{background:#4a8af5;color:#fff;border-color:#4a8af5}
+.toolbar-btn.primary:hover{background:#5a9cf8;border-color:#5a9cf8}
+.add-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,.55);justify-content:center;align-items:center;z-index:200;
+    backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:fadeIn .2s ease}
+.add-modal-overlay.show{display:flex}
+.add-modal{background:#262838;border:1px solid #3a3f55;border-radius:16px;padding:0;
+    width:400px;max-width:92%;box-shadow:0 24px 80px rgba(0,0,0,0.5);
+    animation:slideUp .25s ease;overflow:hidden}
+.add-modal-header{display:flex;align-items:center;gap:10px;padding:20px 24px 0}
+.add-modal-header .modal-icon-sm{width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-modal-header .modal-icon-sm.edit-icon{background:rgba(74,138,245,0.12)}
+.add-modal-header .modal-icon-sm.del-icon{background:rgba(232,85,85,0.12)}
+.add-modal-header .modal-icon-sm.add-icon{background:rgba(75,198,126,0.12)}
+.add-modal-header .modal-icon-sm svg{width:18px;height:18px}
+.add-modal-header h3{font-size:16px;color:#e8eaf0;font-weight:600;margin:0}
+.add-modal-content{padding:16px 24px 8px}
+.add-modal-content label{display:block;font-size:12px;color:#7a7e92;margin-bottom:4px;margin-top:10px}
+.add-modal-content label:first-child{margin-top:0}
+.add-modal-content input{width:100%;background:#1e2030;border:1px solid #3a3f52;border-radius:8px;
+    padding:9px 12px;color:#e0e2ea;font-size:13px;outline:none;box-sizing:border-box;transition:border-color .15s}
+.add-modal-content input:focus{border-color:#4a8af5}
+.add-modal-content .del-info{background:#1e2030;border-radius:8px;padding:14px 16px;margin-top:8px;text-align:left}
+.add-modal-content .del-info .del-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+.add-modal-content .del-info .del-row+.del-row{border-top:1px solid #2a2d40}
+.add-modal-content .del-info .del-label{color:#7a7e96}
+.add-modal-content .del-info .del-value{color:#e0e2ea;font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.add-modal-footer{display:flex;border-top:1px solid #2a2d40;margin-top:16px}
+.add-modal-footer .modal-btn{flex:1;padding:13px 0;font-size:14px;font-weight:500;cursor:pointer;
+    border:none;background:transparent;transition:all .15s}
+.add-modal-footer .modal-btn-cancel{color:#8b90a8}
+.add-modal-footer .modal-btn-cancel:hover{background:#2a2d40;color:#c0c4d8}
+.add-modal-footer .modal-btn-confirm{color:#4a8af5;border-left:1px solid #2a2d40}
+.add-modal-footer .modal-btn-confirm:hover{background:rgba(74,138,245,0.1)}
+.add-modal-footer .modal-btn-danger{color:#e85555;border-left:1px solid #2a2d40}
+.add-modal-footer .modal-btn-danger:hover{background:rgba(232,85,85,0.1)}
+.mapping-table-wrap{background:#1e2028;border:1px solid #2e3040;border-radius:8px;
+                    max-height:240px;overflow:auto;margin-bottom:4px}
+.mapping-table{width:100%;border-collapse:collapse;font-size:12px}
+.mapping-table th{background:#252838;color:#7a7e92;padding:6px 8px;text-align:left;
+                  position:sticky;top:0;z-index:1;font-weight:500;border-bottom:1px solid #2e3040}
+.mapping-table td{padding:4px 8px;color:#b0b4cc;border-bottom:1px solid #22242e;max-height:28px}
+.mapping-table tr:hover td{background:#252838}
+.mapping-table tr.editing td{background:#1e2538}
+.mapping-table td.copyable{cursor:pointer;position:relative}
+.mapping-table td.copyable:hover{color:#4a8af5}
+.mapping-table td.copyable::after{content:'复制';position:absolute;right:2px;top:2px;font-size:9px;color:#5a5e72;opacity:0;transition:opacity .15s}
+.mapping-table td.copyable:hover::after{opacity:1}
+.mapping-table td.copied::after{content:'已复制';color:#4bc67e;opacity:1}
+.mapping-table .credit-code{font-family:"SF Mono","Menlo",monospace;font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mapping-table .company{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mapping-table .bureau{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mapping-table .actions{white-space:nowrap;text-align:right;width:80px}
+.mapping-table .actions button{background:none;border:none;cursor:pointer;padding:2px 6px;font-size:12px;border-radius:3px}
+.mapping-table .actions .btn-edit{color:#4a8af5}
+.mapping-table .actions .btn-edit:hover{background:rgba(74,138,245,0.12)}
+.mapping-table .actions .btn-del{color:#e85555}
+.mapping-table .actions .btn-del:hover{background:rgba(232,85,85,0.12)}
+.mapping-table .actions .btn-save{color:#4bc67e}
+.mapping-table .actions .btn-save:hover{background:rgba(75,198,126,0.12)}
+.mapping-table .actions .btn-cancel{color:#9a9eb8}
+.mapping-table .actions .btn-cancel:hover{background:rgba(154,158,184,0.12)}
+.mapping-table td input{background:#2a2d38;border:1px solid #4a8af5;border-radius:4px;padding:2px 6px;color:#e0e2ea;font-size:12px;width:100%;box-sizing:border-box}
+.mapping-empty{padding:20px;text-align:center;color:#5a5e72;font-size:13px}
+.mapping-footer{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:#7a7e92}
+.mapping-footer button{background:none;border:1px solid #3a3f52;color:#9a9eb8;padding:3px 10px;
+    border-radius:4px;cursor:pointer;font-size:12px}
+.mapping-footer button:hover{border-color:#4a8af5;color:#4a8af5}
+.mapping-footer button:disabled{opacity:.4;cursor:not-allowed}
+.mapping-footer .page-info{flex:1}
+
 </style>
 </head>
 <body>
@@ -93,44 +185,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     <h1>案件线索移送函<span>批量生成</span></h1>
     <div class="status" id="status">就绪</div>
   </div>
-  <div class="steps">
-    <div class="step step-on" id="step1"><span class="num">1</span>预检</div>
-    <div class="step-arrow">→</div>
-    <div class="step step-off" id="step2"><span class="num">2</span>补充数据</div>
-    <div class="step-arrow">→</div>
-    <div class="step step-off" id="step3"><span class="num">3</span>生成文件</div>
+  <div class="form-row">
+    <label>源文件</label>
+    <input type="text" id="source_excel" placeholder="Excel工单文件路径...">
+    <button class="btn btn-secondary btn-sm" onclick="selectFile('source_excel')">浏览</button>
   </div>
-  <div class="panel" id="panel1">
-    <h2>选择源文件并预检</h2>
-    <div class="form-row">
-      <label>源文件</label>
-      <input type="text" id="source_excel" placeholder="Excel工单文件路径...">
-      <button class="btn btn-secondary btn-sm" onclick="selectFile('source_excel')">浏览</button>
-    </div>
-    <div class="form-row">
-      <label>输出目录</label>
-      <input type="text" id="output_dir" placeholder="输出目录...">
-      <button class="btn btn-secondary btn-sm" onclick="selectDir('output_dir')">浏览</button>
-    </div>
+  <div class="form-row">
+    <label>输出目录</label>
+    <input type="text" id="output_dir" placeholder="输出目录...">
+    <button class="btn btn-secondary btn-sm" onclick="selectDir('output_dir')">浏览</button>
+  </div>
+  <div class="form-row" style="gap:12px">
     <button class="btn btn-primary" id="btn_precheck" onclick="doPrecheck()">开始预检</button>
-  </div>
-  <div class="panel" id="panel2" style="display:none">
-    <h2 class="warn" id="step2_title">缺失登记机关数据，请补充</h2>
-    <div class="form-row">
-      <label>补充文件</label>
-      <input type="text" id="import_path" placeholder="选择已填写的补充模板...">
-      <button class="btn btn-secondary btn-sm" onclick="selectFile('import_path')">浏览</button>
-    </div>
-    <div style="display:flex;gap:12px;margin-top:4px">
-      <button class="btn btn-primary" id="btn_import" onclick="doImport()">导入数据</button>
-      <button class="btn btn-secondary" onclick="openOutput()">打开输出目录</button>
-    </div>
-  </div>
-  <div class="panel" id="panel3" style="display:none">
-    <h2 class="ok">数据完整，可以生成文件</h2>
-    <button class="btn btn-primary" id="btn_gen" onclick="doGenerate()">开始生成</button>
-    <div class="progress-bar"><div class="progress-fill" id="progress_fill" style="width:0%"></div></div>
-    <div class="progress-label" id="progress_label"></div>
+    <button class="btn btn-success" id="btn_gen" onclick="doGenerate()" disabled>生成案件</button>
   </div>
   <div class="stats">
     <div class="stat-card"><div class="label">数据库</div><div class="value blue" id="s_db">0</div></div>
@@ -141,36 +208,98 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     <div class="stat-card"><div class="label">台账</div><div class="value green" id="s_ledger">--</div></div>
     <div class="stat-card"><div class="label">错误</div><div class="value green" id="s_err">--</div></div>
   </div>
+
+  <div class="mapping-header">
+    <span>映射关系表</span>
+    <span class="mapping-count" id="mapping_count">0 条记录</span>
+  </div>
+  <div class="mapping-toolbar">
+    <input class="search" id="map_search" placeholder="搜索信用代码/企业名/登记机关..." oninput="filterMapping()" />
+    <button class="toolbar-btn primary" onclick="showAddModal()"><span class="icon">＋</span>添加</button>
+    <button class="toolbar-btn" onclick="exportDb()"><span class="icon">↡</span>导出</button>
+    <button class="toolbar-btn" onclick="importUpdate()"><span class="icon">↟</span>导入</button>
+  </div>
+  <div class="mapping-table-wrap">
+    <table class="mapping-table" id="mapping_table">
+      <thead><tr><th>统一社会信用代码</th><th>企业名称</th><th>登记机关</th><th style="width:80px;text-align:right">操作</th></tr></thead>
+      <tbody id="mapping_body"></tbody>
+    </table>
+    <div class="mapping-empty" id="mapping_empty">暂无数据</div>
+  </div>
+  <div class="mapping-footer" id="mapping_footer" style="display:none">
+    <span class="page-info" id="page_info"></span>
+    <button id="btn_prev" onclick="prevPage()">上一页</button>
+    <span id="page_num">1</span>
+    <button id="btn_next" onclick="nextPage()">下一页</button>
+    <select id="page_size_sel" onchange="changePageSize()" style="background:#2a2d38;border:1px solid #3a3f52;color:#9a9eb8;padding:2px 4px;border-radius:4px;font-size:12px">
+      <option value="10">10条/页</option>
+      <option value="20" selected>20条/页</option>
+      <option value="50">50条/页</option>
+      <option value="100">100条/页</option>
+    </select>
+  </div>
+  <div class="add-modal-overlay" id="add_modal">
+    <div class="add-modal">
+      <div class="add-modal-header">
+        <div class="modal-icon-sm add-icon" id="form_modal_icon_add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4bc67e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div class="modal-icon-sm edit-icon" id="form_modal_icon_edit" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4a8af5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <h3 id="form_modal_title">添加映射记录</h3>
+      </div>
+      <div class="add-modal-content">
+        <label>统一社会信用代码</label>
+        <input id="add_cc" placeholder="请输入统一社会信用代码" />
+        <label>企业名称</label>
+        <input id="add_company" placeholder="请输入企业名称" />
+        <label>登记机关</label>
+        <input id="add_bureau" placeholder="请输入登记机关" />
+      </div>
+      <div class="add-modal-footer">
+        <button class="modal-btn modal-btn-cancel" onclick="hideAddModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" id="form_modal_submit" onclick="addMapping()">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm modal -->
+  <div class="add-modal-overlay" id="del_modal">
+    <div class="add-modal" style="width:380px">
+      <div class="add-modal-header">
+        <div class="modal-icon-sm del-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e85555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        </div>
+        <h3>确认删除</h3>
+      </div>
+      <div class="add-modal-content">
+        <p style="font-size:14px;color:#8b90a8;margin:0 0 4px">此操作不可撤销，确定要删除该映射记录吗？</p>
+        <div class="del-info" id="del_info"></div>
+      </div>
+      <div class="add-modal-footer">
+        <button class="modal-btn modal-btn-cancel" onclick="hideDelModal()">取消</button>
+        <button class="modal-btn modal-btn-danger" id="del_confirm_btn" onclick="confirmDel()">删除</button>
+      </div>
+    </div>
+  </div>
+
   <div class="log-header">
     <span>日志</span>
     <div style="flex:1"></div>
-    <button class="btn btn-secondary btn-sm" onclick="exportDb()">导出数据</button>
     <button class="btn btn-secondary btn-sm" onclick="doReset()">重置</button>
     <button class="btn btn-secondary btn-sm" onclick="clearLog()">清空</button>
   </div>
   <div class="log-box" id="log_box"></div>
 
-  <div class="modal-overlay" id="modal_overlay">
-    <div class="modal">
-      <div class="modal-body">
-        <div class="modal-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffc845" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-        </div>
-        <h3>缺失登记机关数据</h3>
-        <p class="modal-desc">部分企业未找到登记机关信息，需要补充后才能继续处理</p>
-        <div class="modal-detail">
-          <div class="detail-row"><span class="detail-label">需要登记机关</span><span class="detail-value" id="modal_total">--</span></div>
-          <div class="detail-row"><span class="detail-label">已覆盖</span><span class="detail-value" id="modal_covered" style="color:#4bc67e">--</span></div>
-          <div class="detail-row"><span class="detail-label">缺失</span><span class="detail-value warn" id="modal_missing">--</span></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn modal-btn-cancel" onclick="cancelSupplement()">暂不补充</button>
-        <button class="modal-btn modal-btn-confirm" onclick="confirmSupplement()">确认补充</button>
-      </div>
+  <div class="gen-overlay" id="gen_overlay">
+    <div class="gen-spinner" id="gen_spinner"></div>
+    <div class="gen-done-icon" id="gen_done_icon" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4bc67e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
+    <div class="gen-text" id="gen_text">正在生成案件文件...</div>
+    <div class="gen-progress"><div class="gen-progress-fill" id="gen_progress_fill"></div></div>
+    <div class="gen-detail" id="gen_detail">准备中</div>
   </div>
 
   <!-- Generic alert/confirm dialog -->
@@ -208,6 +337,7 @@ window.addEventListener('pywebviewready', function(){
 });
 const $ = id => document.getElementById(id);
 var _alertCallback = null;
+var _confirmShown=false;var _allRecords=[];var _mapPage=1;
 function showAlert(msg, type, title){
   type = type || 'info';
   title = title || '提示';
@@ -266,28 +396,52 @@ function pollState(){
   setTimeout(pollState,pollMs);
 }
 pollState();
+loadMapping();
 function updateUI(d){
-  for(let i=1;i<=3;i++){
-    let el=$('step'+i);
-    el.className='step '+(i<d.step?'step-done':(i===d.step?'step-on':'step-off'));
-  }
-  $('panel1').style.display=d.step===1?'block':'none';
-  $('panel2').style.display=d.step===2?'block':'none';
-  $('panel3').style.display=d.step===3?'block':'none';
   $('btn_precheck').disabled=d.running;
-  $('btn_import').disabled=d.running;
-  $('btn_gen').disabled=d.running;
-  $('status').textContent=d.status==='needs_confirm'?'缺失数据请确认':d.status;
+  $('btn_gen').disabled=d.running||d.step<2;
+  var statusText=d.status;
+  if(d.status==='needs_supplement') statusText='需要补充登记机关';
+  if(d.status==='all covered') statusText='预检通过';
+  $('status').textContent=statusText;
   $('status').className='status status-'+d.status_color;
-  if(d.status==='needs_confirm'&&d.missing_count>0&&!window._confirmShown){
-    window._confirmShown=true;
-    $('modal_total').textContent=d.stats.need;
-    $('modal_covered').textContent=d.stats.ok;
-    $('modal_missing').textContent=d.stats.missing;
-    $('modal_overlay').style.display='flex';
+  // Auto-close precheck alert when done
+  if(_precheckRunning&&!d.running){
+    _precheckRunning=false;
+    if(d.status==='needs_supplement'){
+      showAlert('预检发现 '+d.missing_count+' 条登记机关缺失，已生成补充清单文件（待补充登记机关.xlsx），请填写后导入映射关系表，再重新预检','warn','需要补充登记机关');
+    }else if(d.status==='all covered'){
+      showAlert('预检通过，可以生成案件','success','预检完成');
+      setTimeout(closeAlert, 1500);
+    }else if(d.status==='precheck failed'){
+      showAlert('预检失败，请检查源文件','error','预检失败');
+    }else{
+      closeAlert();
+    }
   }
-  $('progress_fill').style.width=(d.progress*100)+'%';
-  $('progress_label').textContent=d.progress_label;
+  // Generate overlay progress
+  if(_genRunning&&d.running){
+    $('gen_progress_fill').style.width=(d.progress*100)+'%';
+    $('gen_detail').textContent=d.progress_label||'处理中...';
+    // Update text based on progress stage
+    if(d.progress<0.5) $('gen_text').textContent='正在生成Word文档...';
+    else if(d.progress<0.9) $('gen_text').textContent='正在生成台账...';
+    else $('gen_text').textContent='即将完成...';
+  }
+  if(_genRunning&&!d.running){
+    _genRunning=false;
+    // Show success animation
+    $('gen_spinner').style.display='none';
+    $('gen_done_icon').style.display='flex';
+    $('gen_text').textContent='案件生成完成！';
+    $('gen_progress_fill').style.width='100%';
+    $('gen_detail').textContent='Word: '+d.stats.word+'  台账: '+d.stats.ledger+(d.stats.err>0?'  错误: '+d.stats.err:'');
+    setTimeout(function(){
+      $('gen_overlay').classList.remove('show');
+    }, 2000);
+  }
+  var pf=$('progress_fill');if(pf)pf.style.width=(d.progress*100)+'%';
+  var pl=$('progress_label');if(pl)pl.textContent=d.progress_label;
   $('s_db').textContent=d.stats.db;
   $('s_need').textContent=d.stats.need;
   $('s_ok').textContent=d.stats.ok;
@@ -297,6 +451,7 @@ function updateUI(d){
   $('s_err').textContent=d.stats.err;
   $('s_missing').className='value '+(d.stats.missing==0||d.stats.missing==='0'?'green':(d.stats.missing==='--'?'dim':'red'));
   $('s_err').className='value '+(d.stats.err==0||d.stats.err==='0'?'green':(d.stats.err==='--'?'dim':'red'));
+  // mapping table loads independently on page init
   $('log_box').textContent=d.logs.join('\n');
   $('log_box').scrollTop=$('log_box').scrollHeight;
 }
@@ -322,34 +477,237 @@ function selectDir(inputId){
     showAlert('桌面环境未就绪，请稍后重试', 'warn', '环境未就绪');
   }
 }
-function doPrecheck(){
-  fetch('/api/precheck',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({source_excel:$('source_excel').value,output_dir:$('output_dir').value})
-  }).then(r=>r.json()).then(d=>{if(d.error)showAlert(d.error,'error','预检失败')});
+
+function showAddModal(){
+  $('form_modal_title').textContent='添加映射记录';
+  $('form_modal_icon_add').style.display='flex';
+  $('form_modal_icon_edit').style.display='none';
+  $('form_modal_submit').textContent='添加';
+  $('form_modal_submit').setAttribute('onclick','addMapping()');
+  $('add_cc').value='';$('add_company').value='';$('add_bureau').value='';
+  $('add_cc').removeAttribute('readonly');
+  $('add_cc').style.opacity='1';
+  $('add_modal').classList.add('show');$('add_cc').focus();
 }
-function doImport(){
-  var path=$('import_path').value;
-  if(!path||path.trim()===''){
-    showAlert('请先选择补充模板文件','warn','请选择文件');
-    return;
-  }
-  $('btn_import').disabled=true;
-  $('btn_import').textContent='导入中...';
-  fetch('/api/import',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({import_path:path,output_dir:$('output_dir').value})
+function showEditModal(cc,company,bureau){
+  $('form_modal_title').textContent='编辑映射记录';
+  $('form_modal_icon_add').style.display='none';
+  $('form_modal_icon_edit').style.display='flex';
+  $('form_modal_submit').textContent='保存';
+  $('form_modal_submit').setAttribute('onclick','saveEditMapping()');
+  $('add_cc').value=cc;$('add_company').value=company;$('add_bureau').value=bureau;
+  $('add_cc').setAttribute('readonly','true');
+  $('add_cc').style.opacity='0.6';
+  $('add_modal').classList.add('show');$('add_company').focus();
+}
+function hideAddModal(){$('add_modal').classList.remove('show');$('add_cc').value='';$('add_company').value='';$('add_bureau').value='';$('add_cc').removeAttribute('readonly');$('add_cc').style.opacity='1';}
+function hideDelModal(){$('del_modal').classList.remove('show');_pendingDelCc=null;}
+var _pendingDelCc=null;
+function showDelModal(cc,company,bureau){
+  _pendingDelCc=cc;
+  $('del_info').innerHTML=
+    '<div class="del-row"><span class="del-label">信用代码</span><span class="del-value">'+esc(cc)+'</span></div>'
+    +'<div class="del-row"><span class="del-label">企业名称</span><span class="del-value">'+esc(company||'—')+'</span></div>'
+    +'<div class="del-row"><span class="del-label">登记机关</span><span class="del-value">'+esc(bureau||'—')+'</span></div>';
+  $('del_modal').classList.add('show');
+}
+function confirmDel(){
+  if(!_pendingDelCc)return;
+  var cc=_pendingDelCc;
+  hideDelModal();
+  fetch('/api/mapping/delete',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({credit_code:cc})
   }).then(r=>r.json()).then(d=>{
-    if(d.error){showAlert(d.error,'error','导入失败');}
-    $('btn_import').disabled=false;
-    $('btn_import').textContent='导入数据';
-  }).catch(()=>{
-    $('btn_import').disabled=false;
-    $('btn_import').textContent='导入数据';
+    if(d.ok){loadMapping();refreshDbCount();}
+    else if(d.error){showAlert(d.error,'error','删除失败');}
   });
 }
+function saveEditMapping(){
+  var cc=$('add_cc').value.trim(),company=$('add_company').value.trim(),bureau=$('add_bureau').value.trim();
+  if(!bureau){showAlert('登记机关不能为空','warn','请填写');return;}
+  fetch('/api/mapping/update',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({credit_code:cc,company:company,bureau:bureau})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){hideAddModal();loadMapping();refreshDbCount();}
+    else if(d.error){showAlert(d.error,'error','保存失败');}
+  });
+}
+function importUpdate(){
+  if(window.pywebview&&window.pywebview.api&&_pywebviewReady){
+    pywebview.api.fileDialog().then(function(path){
+      if(path)doImportPath(path);
+    });
+  }else{
+    var path=prompt('请输入导入文件的完整路径:');
+    if(path)doImportPath(path);
+  }
+}
+function doImportPath(path){
+  showAlert('正在导入更新，请稍候...','info','导入中');
+  fetch('/api/import_update',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({import_path:path})
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){showAlert(d.error,'error','导入失败');return;}
+    showAlert('导入完成：更新/新增 '+d.imported+' 条，跳过 '+d.skipped+' 条','success','导入成功');
+    loadMapping();refreshDbCount();
+  }).catch(function(e){
+    showAlert('导入失败：'+e,'error','导入失败');
+  });
+}
+function loadMapping(){
+  fetch('/api/mapping_records').then(r=>r.json()).then(d=>{
+    _allRecords=d.records||[];
+    _mapPage=1;
+    renderMapping();
+  });
+}
+function filterMapping(){
+  _mapPage=1;
+  renderMapping();
+}
+function renderMapping(){
+  var body=$('mapping_body');
+  var empty=$('mapping_empty');
+  var footer=$('mapping_footer');
+  body.innerHTML='';
+  var kw=$('map_search').value.trim().toLowerCase();
+  var filtered=_allRecords;
+  if(kw){
+    filtered=_allRecords.filter(function(r){
+      return (r.credit_code||'').toLowerCase().indexOf(kw)>=0
+        ||(r.company||'').toLowerCase().indexOf(kw)>=0
+        ||(r.bureau||'').toLowerCase().indexOf(kw)>=0;
+    });
+  }
+  var total=filtered.length;
+  var pageSize=parseInt($('page_size_sel').value)||20;
+  var totalPages=Math.max(1,Math.ceil(total/pageSize));
+  if(_mapPage>totalPages)_mapPage=totalPages;
+  if(_mapPage<1)_mapPage=1;
+  var start=(_mapPage-1)*pageSize;
+  var pageData=filtered.slice(start,start+pageSize);
+  if(total===0){
+    empty.style.display='';
+    footer.style.display='none';
+    $('mapping_count').textContent='0 条记录';
+    return;
+  }
+  empty.style.display='none';
+  footer.style.display='flex';
+  $('mapping_count').textContent=_allRecords.length+' 条记录'+(kw?' (筛选 '+total+')':'');
+  pageData.forEach(function(r){
+    var tr=document.createElement('tr');
+    tr.setAttribute('data-cc',r.credit_code);
+    tr.innerHTML='<td class="credit-code copyable" title="点击复制: '+esc(r.credit_code)+'" onclick="copyCell(this)">'+esc(r.credit_code)+'</td>'
+      +'<td class="company copyable" title="点击复制: '+esc(r.company||'')+'" onclick="copyCell(this)">'+esc(r.company||'')+'</td>'
+      +'<td class="bureau copyable" title="点击复制: '+esc(r.bureau||'')+'" onclick="copyCell(this)">'+esc(r.bureau||'')+'</td>'
+      +'<td class="actions">'
+        +'<button class="btn-edit" onclick="editMapping(this)">编辑</button>'
+        +'<button class="btn-del" onclick="delMapping(this)">删除</button></td>';
+    body.appendChild(tr);
+  });
+  $('page_info').textContent='共 '+total+' 条';
+  $('page_num').textContent=_mapPage+' / '+totalPages;
+  $('btn_prev').disabled=_mapPage<=1;
+  $('btn_next').disabled=_mapPage>=totalPages;
+}
+function prevPage(){if(_mapPage>1){_mapPage--;renderMapping();}}
+function nextPage(){_mapPage++;renderMapping();}
+function changePageSize(){_mapPage=1;renderMapping();}
+function addMapping(){
+  var cc=$('add_cc').value.trim(),company=$('add_company').value.trim(),bureau=$('add_bureau').value.trim();
+  if(!cc||!bureau){showAlert('信用代码和登记机关不能为空','warn','请填写');return;}
+  fetch('/api/mapping/update',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({credit_code:cc,company:company,bureau:bureau})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){hideAddModal();loadMapping();refreshDbCount();}
+    else if(d.error){showAlert(d.error,'error','添加失败');}
+  });
+}
+function editMapping(btn){
+  var tr=btn.closest('tr');
+  var cc=tr.getAttribute('data-cc');
+  var tds=tr.querySelectorAll('td');
+  var company=tds[1].textContent;
+  var bureau=tds[2].textContent;
+  showEditModal(cc,company,bureau);
+}
+function saveMapping(btn){
+  var tr=btn.closest('tr');
+  var cc=tr.getAttribute('data-cc');
+  var company=tr.querySelectorAll('td')[1].querySelector('input').value.trim();
+  var bureau=tr.querySelectorAll('td')[2].querySelector('input').value.trim();
+  if(!bureau){showAlert('登记机关不能为空','warn','请填写');return;}
+  fetch('/api/mapping/update',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({credit_code:cc,company:company,bureau:bureau})
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){loadMapping();refreshDbCount();}
+    else if(d.error){showAlert(d.error,'error','保存失败');}
+  });
+}
+function delMapping(btn){
+  var tr=btn.closest('tr');
+  var cc=tr.getAttribute('data-cc');
+  var tds=tr.querySelectorAll('td');
+  var company=tds[1].textContent;
+  var bureau=tds[2].textContent;
+  showDelModal(cc,company,bureau);
+}
+function refreshDbCount(){
+  fetch('/api/mapping_records').then(r=>r.json()).then(d=>{
+    $('s_db').textContent=d.count;
+  });
+}
+function copyCell(td){
+  var text=td.textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(text);}
+  else{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+  td.classList.add('copied');
+  setTimeout(function(){td.classList.remove('copied');},800);
+}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+var _precheckRunning=false;
+function doPrecheck(){
+  _precheckRunning=true;
+  _confirmShown=false;
+  fetch('/api/precheck',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({source_excel:$('source_excel').value,output_dir:$('output_dir').value})
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){
+      _precheckRunning=false;
+      showAlert(d.error,'error','预检失败');
+    }
+  }).catch(function(e){
+    _precheckRunning=false;
+    showAlert('预检失败：'+e,'error','预检失败');
+  });
+}
+var _genRunning=false;
 function doGenerate(){
+  $('btn_gen').disabled=true;
+  _genRunning=true;
+  // Show overlay
+  $('gen_spinner').style.display='';
+  $('gen_done_icon').style.display='none';
+  $('gen_text').textContent='正在生成案件文件...';
+  $('gen_progress_fill').style.width='0%';
+  $('gen_detail').textContent='准备中';
+  $('gen_overlay').classList.add('show');
   fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({output_dir:$('output_dir').value})
-  }).then(r=>r.json()).then(d=>{if(d.error)showAlert(d.error,'error','生成失败')});
+  }).then(r=>r.json()).then(d=>{
+    if(d.error){
+      $('gen_overlay').classList.remove('show');
+      _genRunning=false;
+      showAlert(d.error,'error','生成失败');
+    }
+    // Success will be handled in updateUI when running=false
+  }).catch(function(e){
+    $('gen_overlay').classList.remove('show');
+    _genRunning=false;
+    showAlert('生成失败：'+e,'error','生成失败');
+  });
 }
 function doReset(){fetch('/api/reset',{method:'POST'}).then(()=>pollState())}
 function exportDb(){
@@ -382,33 +740,6 @@ function clearLog(){
   fetch('/api/clear_log',{method:'POST'});
   var box=$('log_box');
   if(box) box.textContent='';
-}
-function confirmSupplement(){
-  $('modal_overlay').style.display='none';
-  var saveDir=$('output_dir').value||'';
-  fetch('/api/confirm_supplement',{method:'POST'}).then(function(r){
-    return r.json();
-  }).then(function(){
-    fetch('/api/export_template',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({save_dir:saveDir})
-    }).then(function(r2){return r2.json()}).then(function(data){
-      if(data.ok){
-        _confirmShown=false;
-        pollState();
-      }else if(data.error){
-        showAlert(data.error,'error','导出模板失败');
-      }
-    });
-  });
-}
-function cancelSupplement(){
-  $('modal_overlay').style.display='none';
-  fetch('/api/cancel_supplement',{method:'POST'}).then(function(r){
-    return r.json();
-  }).then(function(){
-    _confirmShown=false;
-    pollState();
-  });
 }
 </script>
 </body>

@@ -14,16 +14,11 @@ TEMPLATES = {
     "自营开票": "demands/（自营开票）案件线索移送函J20262053109.docx",
 }
 
-# Ledger template
-LEDGER_TEMPLATE = "demands/台账(1）.xlsx"
-
 # --- API Configuration for enterprise registration authority lookup ---
-# Supported providers: "tianyancha_web", "tianyancha", "qichacha", "mock"
-#   tianyancha_web: scrape tianyancha.com (no API key needed, rate-limited)
-#   tianyancha: official Tianyancha API (requires token)
-#   qichacha: official Qichacha API (requires key+secret)
-#   mock: address heuristic only (no network)
-API_PROVIDER = "tianyancha_web"
+# NOTE: API-based lookup has been replaced by a local SQLite bureau database.
+# The constants below are retained for reference only and are NOT used by the app.
+# Bureau data is managed via BureauDB in api_client.py (import/export workflow).
+API_PROVIDER = "mock"
 
 # Tianyancha API
 TIANYANCHA_API_TOKEN = ""

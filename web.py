@@ -1,7 +1,7 @@
 """Flask web UI for case transfer letter batch generation tool.
 
 Run: python3 web.py
-Opens http://localhost:5000 in browser.
+Opens http://localhost:5002 in browser.
 """
 
 import json
@@ -149,14 +149,22 @@ def run_precheck(src, out):
             job_state["missing_count"] = len(coverage["missing"])
             _log(f"  >>> {len(coverage['missing'])} bureaus missing, need supplement")
 
+            # Auto-export missing list as Excel
+            tpl_path = Path(out) / "待补充登记机关.xlsx"
+            db2 = BureauDB()
+            db2.export_template(coverage["missing"], str(tpl_path))
+            db2.close()
+            _log(f"  >>> 已生成补充清单: {tpl_path}")
+            _log(f"  >>> 请在清单中填写登记机关后，通过映射关系表的「导入」功能导入，再重新预检")
+
             _set_progress(1.0, "Missing " + str(job_state["missing_count"]))
-            _set_status("needs_confirm", "yellow")
+            _set_status("needs_supplement", "yellow")
             _set_step(1)
         else:
             _log("All bureaus covered!")
             _set_progress(1.0, "Ready")
             _set_status("all covered", "green")
-            _set_step(3)
+            _set_step(2)
     except Exception as e:
         _log(f"FATAL: {e}")
         _log(traceback.format_exc())
@@ -176,10 +184,10 @@ def run_import(import_path, out):
         _set_progress(0.3, "Importing data...")
 
         db = BureauDB()
-        result = db.import_template(import_path)
+        result = db.import_full_replace(import_path)
         db.close()
 
-        _log(f"Imported: {result['imported']} new, {result['skipped']} skipped")
+        _log(f"Imported: {result['imported']} entries, {result['skipped']} skipped, {result['deleted']} old records replaced")
 
         db_count = BureauDB().count()
         _update_stats(db=db_count)
@@ -198,13 +206,15 @@ def run_import(import_path, out):
             if coverage["missing"]:
                 job_state["missing_info"] = coverage["missing"]
                 job_state["missing_count"] = len(coverage["missing"])
-                _log(f"  >>> Still {len(coverage["missing"])} missing")
-                _set_status("needs_confirm", "yellow")
-                _set_step(2)
+                _log(f"Re-check: still {len(coverage['missing'])} missing")
+                _log(f"  >>> 请继续补充登记机关后重新导入")
+
+                _set_status("needs_supplement", "yellow")
+                _set_step(1)
             else:
                 _set_status("all covered", "green")
                 _set_progress(1.0, "Ready")
-                _set_step(3)
+                _set_step(2)
     except Exception as e:
         _log(f"FATAL: {e}")
         _log(traceback.format_exc())
@@ -355,6 +365,7 @@ def api_state():
         "status": job_state["status"], "status_color": job_state["status_color"],
         "stats": job_state["stats"], "logs": job_state["logs"][-100:],
         "missing_count": job_state["missing_count"],
+        "missing_list": job_state.get("missing_info") or [],
     })
 
 @app.route("/api/precheck", methods=["POST"])
@@ -374,8 +385,8 @@ def api_precheck():
 def api_import():
     if job_state["running"]:
         return jsonify({"error": "task running"}), 400
-    if job_state["step"] not in (2, 3):
-        return jsonify({"error": "请先执行预检并确认补充"}), 400
+    if job_state["step"] not in (1, 2):
+        return jsonify({"error": "请先执行预检"}), 400
     if not job_state.get("missing_info"):
         return jsonify({"error": "无需补充数据"}), 400
     data = request.json or {}
@@ -391,8 +402,8 @@ def api_import():
 def api_generate():
     if job_state["running"]:
         return jsonify({"error": "task running"}), 400
-    if job_state["step"] < 3:
-        return jsonify({"error": "请先完成预检和数据补充"}), 400
+    if job_state["step"] < 2:
+        return jsonify({"error": "请先完成预检"}), 400
     if not job_state.get("parsed_items"):
         return jsonify({"error": "请先执行预检"}), 400
     data = request.json or {}
@@ -427,7 +438,7 @@ def api_export_template():
 
 @app.route("/api/confirm_supplement", methods=["POST"])
 def api_confirm_supplement():
-    _set_step(2)
+    _set_step(1)
     _set_status("ready for import", "yellow")
     return jsonify({"ok": True})
 
@@ -447,8 +458,8 @@ def api_export_db():
     import openpyxl
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "bureau_data"
-    headers = ["credit_code", "bureau", "company", "source", "updated_at"]
+    ws.title = "企业登记机关"
+    headers = ["统一社会信用代码", "登记机关", "企业名称", "来源", "更新时间"]
     for col, h in enumerate(headers, 1):
         ws.cell(1, col, h)
     for row_idx, row in enumerate(rows, 2):
@@ -459,6 +470,83 @@ def api_export_db():
     wb.save(str(dest))
     wb.close()
     return jsonify({"ok": True, "count": len(rows), "download": f"/api/download/bureau_database.xlsx"})
+
+
+@app.route("/api/mapping_records")
+def api_mapping_records():
+    db = BureauDB()
+    records = db.get_all_records()
+    db.close()
+    return jsonify({"records": records, "count": len(records)})
+
+
+@app.route("/api/mapping/update", methods=["POST"])
+def api_mapping_update():
+    """Add or update a single mapping record."""
+    data = request.json or {}
+    cc = (data.get("credit_code") or "").strip()
+    bureau = (data.get("bureau") or "").strip()
+    company = (data.get("company") or "").strip()
+    if not cc or not bureau:
+        return jsonify({"error": "信用代码和登记机关不能为空"}), 400
+    db = BureauDB()
+    try:
+        db._db.execute(
+            """INSERT OR REPLACE INTO bureau_cache (credit_code, bureau, company, source, updated_at)
+               VALUES (?, ?, ?, 'manual', datetime('now', 'localtime'))""",
+            (cc, bureau, company),
+        )
+        db._db.commit()
+        db.close()
+        return jsonify({"ok": True})
+    except Exception as e:
+        db.close()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/mapping/delete", methods=["POST"])
+def api_mapping_delete():
+    """Delete a single mapping record by credit_code."""
+    data = request.json or {}
+    cc = (data.get("credit_code") or "").strip()
+    if not cc:
+        return jsonify({"error": "信用代码不能为空"}), 400
+    db = BureauDB()
+    try:
+        db._db.execute("DELETE FROM bureau_cache WHERE credit_code = ?", (cc,))
+        db._db.commit()
+        db.close()
+        return jsonify({"ok": True})
+    except Exception as e:
+        db.close()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/import_update", methods=["POST"])
+def api_import_update():
+    """Import and merge: update existing records, add new ones.
+    
+    Used by the '导入更新' button in mapping table toolbar.
+    The import file format matches export_db output:
+    Column A=credit_code, B=bureau, C=company (or A=credit_code, B=company, D=bureau)
+    """
+    data = request.json or {}
+    import_path = data.get("import_path", "")
+    if not import_path or not Path(import_path).exists():
+        return jsonify({"error": "请选择有效的导入文件"}), 400
+    
+    db = BureauDB()
+    try:
+        result = db.import_template(import_path)
+        db.close()
+        return jsonify({
+            "ok": True,
+            "imported": result["imported"],
+            "skipped": result["skipped"],
+            "errors": result.get("errors", [])
+        })
+    except Exception as e:
+        db.close()
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/download/<filename>")
 def api_download(filename):
@@ -476,22 +564,23 @@ if __name__ == "__main__":
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     import threading, time
     server_thread = threading.Thread(
-        target=lambda: app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False),
+        target=lambda: app.run(host="127.0.0.1", port=5004, debug=False, use_reloader=False),
         daemon=True
     )
     server_thread.start()
     for _ in range(20):
         try:
             import urllib.request
-            urllib.request.urlopen("http://127.0.0.1:5000/")
+            urllib.request.urlopen("http://127.0.0.1:5004/")
             break
         except Exception:
             time.sleep(0.5)
     import webview
     window = webview.create_window(
         title="案件线索移送函批量生成",
-        url="http://127.0.0.1:5000/",
-        width=820, height=700, resizable=True, min_size=(600, 500),
+        url="http://127.0.0.1:5004/",
+        width=960, height=720, resizable=True, min_size=(720, 560),
+        background_color='#1a1b23',
         js_api=api,
     )
     webview.start()
